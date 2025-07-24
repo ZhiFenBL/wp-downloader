@@ -39,6 +39,8 @@ style.
 		display: flex;
 		flex-direction: column;
 		line-height: 1.5;
+    		word-wrap: break-word;
+    		overflow-wrap: break-word;
 	}
 
 	.part img {
@@ -160,6 +162,7 @@ html(lang=langName)
 		meta(charset="UTF-8")
 		title= book.title
 		meta(name="viewport" content="width=device-width, initial-scale=1.0")
+		meta(name="scroll-key" content= book.id)
 
 	body
 
@@ -185,10 +188,10 @@ html(lang=langName)
 
 		div#top-control
 
-			button(title="Schriftart ändern" onclick="changeFont()") 🅰️
-			button(title="Schriftgröße verkleinern" onclick="changeFontSize(false)") ➖
-			button(title="Schriftgröße vergrößern" onclick="changeFontSize(true)") ➕
-			button#colormode-button(title="Farbmodus ändern" onclick="changeColorMode()") 🌖
+			button(title="Change font" onclick="changeFont()") 🅰️
+			button(title="Decrease font size" onclick="changeFontSize(false)") ➖
+			button(title="Increase font size" onclick="changeFontSize(true)") ➕
+			button#colormode-button(title="Change color mode" onclick="changeColorMode()") 🌖
 
 		div#bottom-control
 			div#indicator
@@ -201,9 +204,19 @@ html(lang=langName)
 					b Font size:&nbsp;
 					span#font-size 18
 
+		footer
+			a(href="https://wattpad.com" target="_blank") Wattpad.com
+			a(href="https://wattpad.ml" target="_blank") Wattpad Downloader
+
 script.
 	const fontList = ["Arial, sans-serif", "Verdana, sans-serif", "Cambria, serif", "cursive", "monospace"];
-	let scrollsave = localStorage.getItem("scrollsave");
+	const scrollKey = document.querySelector('meta[name="scroll-key"]')?.content;
+	let scrollsave;
+	if (scrollKey) {
+		scrollsave = localStorage.getItem(`scrollsave_${scrollKey}`);
+	} else {
+		console.warn("No scroll key defined in the HTML.");
+	}	
 	let fontsize = localStorage.getItem("fontsize");
 	let colormode = localStorage.getItem("colormode");
 	let font = localStorage.getItem("font");
@@ -229,7 +242,7 @@ script.
 
 	window.addEventListener("click", (event) => {
 
-		if(!event.path.find((el) => el.id === "top-control" || el.id === "bottom-control")){
+		if(!event.composedPath().some((el) => el.id === "top-control" || el.id === "bottom-control")){
 			document.querySelector("#top-control").classList.toggle("active");
 			document.querySelector("#bottom-control").classList.toggle("active");
 		}
@@ -249,7 +262,7 @@ script.
 		window.clearTimeout(isScrolling);
 
 		isScrolling = setTimeout(() => {
-			localStorage.setItem("scrollsave", currentScroll.toString());
+			localStorage.setItem(`scrollsave_${scrollKey}`, currentScroll.toString());
 		}, 80);
 
 	});
